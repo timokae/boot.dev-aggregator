@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
+	"github.com/timokae/boot.dev-aggregator/internal/database"
 )
 
 func main() {
@@ -15,8 +18,23 @@ func main() {
 	}
 
 	port := os.Getenv("PORT")
-	if err != nil {
+	if port == "" {
 		port = "8080"
+	}
+
+	dbURL := os.Getenv("CONN")
+	if dbURL == "" {
+		log.Fatalln("Database connection string missing")
+	}
+
+	db, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	dbQueries := database.New(db)
+	cfg := apiConfig{
+		DB: dbQueries,
 	}
 
 	mux := http.NewServeMux()
@@ -26,17 +44,10 @@ func main() {
 		Handler: mux,
 	}
 
-	mux.HandleFunc("GET /v1/healthz", func(w http.ResponseWriter, r *http.Request) {
-		respondWithJSON(w, http.StatusOK, struct {
-			Status string
-		}{
-			Status: "ok",
-		})
-	})
+	mux.HandleFunc("GET /v1/healthz", handlerReadiness)
+	mux.HandleFunc("GET /v1/err", handlerErr)
 
-	mux.HandleFunc("GET /v1/err", func(w http.ResponseWriter, r *http.Request) {
-		respondWithError(w, http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
-	})
+	mux.HandleFunc("POST /v1/users", cfg.handlerUsersCreate)
 
 	log.Printf("Serving on port: %s\n", port)
 	err = server.ListenAndServe()
