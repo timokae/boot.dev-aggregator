@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/timokae/boot.dev-aggregator/internal/auth"
 	"github.com/timokae/boot.dev-aggregator/internal/database"
 )
 
@@ -35,4 +36,20 @@ func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request)
 	}
 
 	respondWithJSON(w, http.StatusCreated, databaseUserToUser(user))
+}
+
+func (cfg *apiConfig) handlerUserGet(w http.ResponseWriter, r *http.Request) {
+	apiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Could not find api key")
+		return
+	}
+
+	user, err := cfg.DB.FindUserByApiKey(r.Context(), apiKey)
+	if err != nil {
+		respondWithError(w, http.StatusUnauthorized, "Could not find user")
+		return
+	}
+
+	respondWithJSON(w, http.StatusOK, databaseUserToUser(user))
 }

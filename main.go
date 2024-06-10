@@ -48,6 +48,7 @@ func main() {
 	mux.HandleFunc("GET /v1/err", handlerErr)
 
 	mux.HandleFunc("POST /v1/users", cfg.handlerUsersCreate)
+	mux.HandleFunc("GET /v1/users", cfg.handlerUserGet)
 
 	log.Printf("Serving on port: %s\n", port)
 	err = server.ListenAndServe()
