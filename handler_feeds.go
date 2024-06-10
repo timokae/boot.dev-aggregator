@@ -10,9 +10,10 @@ import (
 	"github.com/timokae/boot.dev-aggregator/internal/database"
 )
 
-func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request) {
+func (cfg *apiConfig) handlerFeedsCreate(w http.ResponseWriter, r *http.Request, user database.User) {
 	type parameters struct {
 		Name string `json:"name"`
+		Url  string `json:"url"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -23,20 +24,19 @@ func (cfg *apiConfig) handlerUsersCreate(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusInternalServerError, "Could not decode parameter")
 	}
 
-	user, err := cfg.DB.CreateUser(r.Context(), database.CreateUserParams{
+	feed, err := cfg.DB.CreateFeed(r.Context(), database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
 		Name:      params.Name,
+		Url:       params.Url,
+		UserID:    user.ID,
 	})
 	if err != nil {
 		log.Println(err)
-		respondWithError(w, http.StatusInternalServerError, "Could not create user")
+		respondWithError(w, http.StatusBadRequest, "Could not create feed")
+		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, databaseUserToUser(user))
-}
-
-func (cfg *apiConfig) handlerUserGet(w http.ResponseWriter, r *http.Request, user database.User) {
-	respondWithJSON(w, http.StatusOK, databaseUserToUser(user))
+	respondWithJSON(w, http.StatusCreated, databaseFeedToFeed(feed))
 }
