@@ -40,3 +40,19 @@ func (cfg *apiConfig) handlerFeedsCreate(w http.ResponseWriter, r *http.Request,
 
 	respondWithJSON(w, http.StatusCreated, databaseFeedToFeed(feed))
 }
+
+func (cfg *apiConfig) handlerFeedsGet(w http.ResponseWriter, r *http.Request) {
+	feeds, err := cfg.DB.GetFeeds(r.Context())
+	if err != nil {
+		log.Println(err)
+		respondWithError(w, http.StatusInternalServerError, "Could not fetch feeds")
+		return
+	}
+
+	var feedsToReturn []Feed
+	for _, feed := range feeds {
+		feedsToReturn = append(feedsToReturn, databaseFeedToFeed(feed))
+	}
+
+	respondWithJSON(w, http.StatusOK, feedsToReturn)
+}

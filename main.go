@@ -51,6 +51,7 @@ func main() {
 	mux.HandleFunc("GET /v1/users", cfg.middlewareAuth(cfg.handlerUserGet))
 
 	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.handlerFeedsCreate))
+	mux.HandleFunc("GET /v1/feeds", cfg.handlerFeedsGet)
 
 	log.Printf("Serving on port: %s\n", port)
 	err = server.ListenAndServe()
