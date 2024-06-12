@@ -9,7 +9,8 @@ CREATE TABLE feeds(
   CONSTRAINT fk_user
     FOREIGN KEY(user_id)
     REFERENCES users(id)
-    ON DELETE CASCADE
+    ON DELETE CASCADE,
+  UNIQUE(url)
 );
 
 -- +goose Down

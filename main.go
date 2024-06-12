@@ -53,6 +53,10 @@ func main() {
 	mux.HandleFunc("POST /v1/feeds", cfg.middlewareAuth(cfg.handlerFeedsCreate))
 	mux.HandleFunc("GET /v1/feeds", cfg.handlerFeedsGet)
 
+	mux.HandleFunc("POST /v1/feed_follows", cfg.middlewareAuth(cfg.handlerFeedFollowsCreate))
+	mux.HandleFunc("DELETE /v1/feed_follows/{id}", cfg.middlewareAuth(cfg.handlerFeedFollowsDelete))
+	mux.HandleFunc("GET /v1/feed_follows", cfg.middlewareAuth(cfg.handlerFeedFollowsGet))
+
 	log.Printf("Serving on port: %s\n", port)
 	err = server.ListenAndServe()
 	if err != nil {
