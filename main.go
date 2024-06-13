@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -56,6 +57,10 @@ func main() {
 	mux.HandleFunc("POST /v1/feed_follows", cfg.middlewareAuth(cfg.handlerFeedFollowsCreate))
 	mux.HandleFunc("DELETE /v1/feed_follows/{id}", cfg.middlewareAuth(cfg.handlerFeedFollowsDelete))
 	mux.HandleFunc("GET /v1/feed_follows", cfg.middlewareAuth(cfg.handlerFeedFollowsGet))
+
+	mux.HandleFunc("GET /v1/posts", cfg.middlewareAuth(cfg.handlerGetPostsForUser))
+
+	go scrapeFeeds(cfg.DB, 10, time.Minute)
 
 	log.Printf("Serving on port: %s\n", port)
 	err = server.ListenAndServe()
